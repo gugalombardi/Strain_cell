@@ -1,61 +1,55 @@
 import tkinter as tk
 import numpy as np
 
-#constants
-#LNLS strain cell model CS100 -> capacitor area = 5.34 mm^2
-#LNLS transmission strain cell model CS200T -> capacitor area = 7.42 mm^2
 area = 7.42 #capacitor plates area in mm^2
-area = np.multiply(area,1e-6) #convert area to m^2
 
-dois_pi=np.multiply(2,np.pi)
-
-e=8.854e-12 #Dielectric constant in F/m
-
-#functions
-def capacitance(i,f,v): #returns capacitance in F
-    omega=np.multiply(dois_pi,f)
-    a=np.multiply(omega,v)
+def capacitance(i,f,v):
+    dois_pi=np.multiply(2,np.pi)
+    w=np.multiply(dois_pi,f)
+    a=np.multiply(w,v)
     return np.divide(i,a)
 
-def distancia_capacitance(x):               #If x = 'distance of plates', returns capacitance in F
-    return np.divide(np.multiply(e,area),x) #If x = 'capacitance', return distance of plates in m
+def distancia_capacitance(x):
+    return np.divide(np.multiply(8.854,area),x)
 
-def dist_current(x,f,v):                    #If x = 'distance of plates', returns current in A
-    omega=np.multiply(dois_pi,f)            #If x = 'current', returns distance of plates in m
-    a=np.multiply(omega,v)
-    return np.multiply(a,np.divide(np.multiply(e,area),x))
+def dist_current(x,f,v):
+    dois_pi=np.multiply(2,np.pi)
+    w=np.multiply(dois_pi,f)
+    a=np.multiply(w,v)
+    return np.multiply(a,np.divide(np.multiply(8.854,area),x))
 
 def calculate():
+    #try:
+        #input1_val = float(input1_entry.get()) #cell gap in µm
 
-    input2_val = float(input2_entry.get()) #excitation voltage applied to high plate of the capacitor in V
+    input2_val = float(input2_entry.get()) #excitation voltage applied to high plate of the capacitor
 
-    input3_val = float(input3_entry.get()) #excitation frequency applied to high plate of the capacitor in Hz
+    input3_val = float(input3_entry.get()) #excitation frequency applied to high plate of the capacitor
 
     input4_val = float(input4_entry.get()) #measured current from lock-in in nA
     input4_val = np.multiply(input4_val,1e-9) #convert current to A
 
-    input5_val = input5_entry.get() #desired distance of capacitor plates in µm
+    input5_val = input5_entry.get() #float(input5_entry.get()) #desired distance of capacitor plates in µm
 
     if input5_val == "":
         input5_val = 1
     else:
         input5_val = float(input5_val)
-        input5_val = np.multiply(input5_val,1e-6) #convert distance to m
 
-    output1_val = capacitance(input4_val,input3_val,input2_val) #current capacitance in F
+    output1_val = capacitance(input4_val,input3_val,input2_val) #current capacitance in pF
     output1_val = np.multiply(output1_val,1e12) #convert capacitance to pF
 
-    output2_val = dist_current(input4_val,input3_val,input2_val) #current capacitor plates distance in m
-    output2_val = np.multiply(output2_val,1e6) #convert capacitor distance to µm
+    output2_val = dist_current(input4_val,input3_val,input2_val) #current capacitor plates distance in µm
+    output2_val = np.multiply(output2_val,1e-12) #convert capacitor distance to µm
 
-    output3_val = dist_current(input5_val,input3_val,input2_val) #desired goal current in A
-    corr_ampere = output3_val #saves current value in A
-    output3_val = np.multiply(output3_val,1e9) #convert goal current to nA
+    output3_val = dist_current(input5_val,input3_val,input2_val) #desired goal current in nA
+    output3_val = np.multiply(output3_val,1e-3) #convert goal current to nA
 
-    output4_val = capacitance(corr_ampere,input3_val,input2_val) #desired goal capacitance in F
-    output4_val = np.multiply(output4_val,1e12) #convert desired capacitance to pF
+    output4_val = capacitance(output3_val,input3_val,input2_val) #desired goal capacitance in pF
+    output4_val = np.multiply(output4_val,1e3) #convert desired capacitance to pF
 
-    #Output labels
+
+
     output1_label.config(text=f"C (pF): {output1_val:.5f}")
     output2_label.config(text=f"d (µm): {output2_val:.2f}")
 
@@ -64,11 +58,22 @@ def calculate():
         output4_label.config(text=f"C (pF): {output4_val:.5f}")
     else:
         pass
+    #except ValueError:
+    #    output1_label.config(text="Invalid input, please enter a number")
+    #    output2_label.config(text="Invalid input, please enter a number")
+    #    output3_label.config(text="Invalid input, please enter a number")
+    #    output4_label.config(text="Invalid input, please enter a number")
 
 # Create the main window
 root = tk.Tk()
 root.title("CS200T Transmission strain cell")
 root.geometry("550x210")
+
+# Create the input labels and entries
+#input1_label = tk.Label(root, text="Gap (µm):")
+#input1_label.grid(row=0, column=0)
+#input1_entry = tk.Entry(root)
+#input1_entry.grid(row=0, column=1)
 
 input2_label = tk.Label(root, text="V (V):")
 input2_label.grid(row=0, column=0)
